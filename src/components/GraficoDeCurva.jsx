@@ -8,7 +8,6 @@ export default function LineChartWithDynamicData() {
   const myHeaders = new Headers();
   myHeaders.append("fiware-service", "smart");
   myHeaders.append("fiware-servicepath", "/");
-  myHeaders.append("Access-Control-Allow-Origin", "*");
 
   // Função para buscar e processar os dados do JSON
   const fetchChartData = async () => {
@@ -20,8 +19,8 @@ export default function LineChartWithDynamicData() {
 
     try {
       const responses = await Promise.all([
-        fetch(`http://${url}:8666/STH/v1/contextEntities/type/CarMonitoring/id/urn:ngsi-ld:fiware_carros_monitor/attributes/speed_carro1?lastN=26`, requestOptions),
-        fetch(`http://${url}:8666/STH/v1/contextEntities/type/CarMonitoring/id/urn:ngsi-ld:fiware_carros_monitor/attributes/speed_carro2?lastN=26`, requestOptions)
+        fetch('/api2/STH/v1/contextEntities/type/CarMonitoring/id/urn:ngsi-ld:fiware_carros_monitor/attributes/speed_carro1?lastN=26', requestOptions),
+        fetch('/api2/STH/v1/contextEntities/type/CarMonitoring/id/urn:ngsi-ld:fiware_carros_monitor/attributes/speed_carro2?lastN=26', requestOptions)
       ]);
 
       const dataPromises = responses.map(response => {
