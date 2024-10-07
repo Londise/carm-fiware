@@ -27,7 +27,7 @@ const CarMonitor = () => {
     };
 
     fetch(
-      '/api', requestOptions
+      '/api1/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1,speed_carro2', requestOptions
     )
       .then((response) => {
         if (!response.ok) {
@@ -52,7 +52,7 @@ const CarMonitor = () => {
     };
 
     fetch(
-      '/api/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=ultrapassagem_carro1,ultrapassagem_carro2',
+      '/api1/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=ultrapassagem_carro1,ultrapassagem_carro2',
       requestOptions
     )
       .then((response) => {

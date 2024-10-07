@@ -9,8 +9,8 @@
         "destination": "/"
       },
       {
-        "source": "/api",
-        "destination": "http://20.206.249.58:1026/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1,speed_carro2"
+        "source": "/api1/:path*",
+        "destination": "http://20.206.249.58:1026/:path*"
       },
       {
         "source": "/api2/:path*",
