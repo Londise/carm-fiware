@@ -27,8 +27,7 @@ const CarMonitor = () => {
     };
 
     fetch(
-      '/api/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1,speed_carro2',
-      requestOptions
+      '/api', requestOptions
     )
       .then((response) => {
         if (!response.ok) {
