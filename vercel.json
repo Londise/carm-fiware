@@ -1,10 +1,6 @@
 {
     "rewrites": [
       {
-        "source": "/",
-        "destination": "/"
-      },
-      {
         "source": "/wokwi",
         "destination": "/"
       },
@@ -15,6 +11,10 @@
       {
         "source": "/api2/:path*",
         "destination": "http://20.206.249.58:8666/:path*"
+      },
+      {
+        "source": "/[^.]+",
+        "destination": "/"
       }
     ]
   }
