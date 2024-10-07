@@ -1,15 +1,13 @@
 {
-    "routes": [
+    "rewrites": [
       {
-        "src": "/",
-        "dest": "/"
+        "source": "/",
+        "destination": "/"
       },
       {
-        "src": "/wokwi",
-        "dest": "/"
-      }
-    ],
-    "rewrites": [
+        "source": "/wokwi",
+        "destination": "/"
+      },
       {
         "source": "/api/:path*",
         "destination": "http://20.206.249.58:1026/:path*"
