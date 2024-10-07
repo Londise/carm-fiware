@@ -26,8 +26,8 @@ const CarMonitor = () => {
 
     try {
       const responses = await Promise.all([
-        fetch('/api1/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1', requestOptions),
-        fetch('/api1/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro2', requestOptions)
+        fetch('20.206.249.58:1026/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1', requestOptions),
+        fetch('20.206.249.58:1026/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro2', requestOptions)
       ]);
 
       // Verifica se todas as respostas estão OK
