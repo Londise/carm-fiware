@@ -13,6 +13,7 @@ const CarMonitor = () => {
   myHeaders.append("fiware-service", "smart");
   myHeaders.append("fiware-servicepath", "/");
   myHeaders.append("accept", "application/json");
+  myHeaders.append("Access-Control-Allow-Origin", "*");
 
   const [velocidade1, setVelocidade] = useState(0);
   const [velocidade2, setVelocidade2] = useState(0);

@@ -8,6 +8,7 @@ export default function LineChartWithDynamicData() {
   const myHeaders = new Headers();
   myHeaders.append("fiware-service", "smart");
   myHeaders.append("fiware-servicepath", "/");
+  myHeaders.append("Access-Control-Allow-Origin", "*");
 
   // Função para buscar e processar os dados do JSON
   const fetchChartData = async () => {
