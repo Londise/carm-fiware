@@ -1,116 +1,69 @@
-# E-Masters - Jogo de Fórmula E
+Vamos detalhar o fluxo de dados no sistema de monitoramento de carros usando o simulador Wokwi com uma configuração do FIWARE que inclui o Orion Context Broker, IoT Agent MQTT, STH-Comet, MongoDB, e Mosquitto.
 
-E-Masters é um jogo interativo onde os jogadores escolhem pilotos e equipes da Fórmula E para competir em corridas fictícias. Os participantes são desafiados a prever os vencedores, as posições finais e outros fatores de desempenho, acumulando pontos em duas fases de corrida: a Corrida Principal e a Corrida Classificatória.
+1. Visão Geral do Sistema
+* Simulador Wokwi (ESP32): Envia os dados de velocidade e ultrapassagem de dois carros através de sensores ultrassônicos. Esses dados são transmitidos via MQTT.
+* IoT Agent MQTT: Atua como uma ponte entre os dispositivos IoT (ESP32) e o Orion Context Broker. Ele converte as mensagens MQTT em formato NGSI.
+* Orion Context Broker: Gerencia o contexto das entidades (no seu caso, os carros). Armazena e disponibiliza as informações de velocidade e ultrapassagem em tempo real.
+* STH-Comet: Armazena dados históricos, permitindo que você consulte o histórico dos atributos.
+* MongoDB: Banco de dados usado pelo Orion e pelo STH-Comet para armazenar o estado atual e os dados históricos das entidades.
+* Mosquitto: O broker MQTT que gerencia as mensagens publicadas/subscritas pelos dispositivos IoT e o IoT Agent.
 
-## Funcionalidades Principais
-- Escolha de 10 pilotos e 1 equipe para participar nas corridas.
-- Sistema de pontuação baseado em fatores como: posições finais, voltas rápidas, ultrapassagens e mais.
-- Simulação de Corrida Principal e Corrida Classificatória.
-- Regras detalhadas e fatores de pontuação para cada tipo de corrida.
+<h1> Fluxo de Dados em Tempo Real </h1>
+Requisição:
+GET http://{{url}}:1026/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1,speed_carro2
 
-## Tecnologias Utilizadas
-- **React.js**: Biblioteca JavaScript para a construção de interfaces de usuário.
-- **CSS**: Para estilização do jogo.
-- **JavaScript**: Para controle da lógica do jogo, simulação das corridas e cálculo da pontuação.
+* ESP32 + Sensores Ultrassônicos: Os sensores no Wokwi detectam a velocidade dos carros e enviam os dados via MQTT para o Mosquitto Broker.
 
-## Instalação
+* Mosquitto Broker: O broker recebe os dados de velocidade publicados pelo ESP32.
 
-### Pré-requisitos
-- **Node.js**: Certifique-se de ter o Node.js instalado. [Instalar Node.js](https://nodejs.org/)
-- **npm**: Gerenciador de pacotes.
+* IoT Agent MQTT: O IoT Agent MQTT escuta as mensagens do Mosquitto. Quando uma mensagem (por exemplo, a velocidade de um carro) é recebida, o IoT Agent converte essa mensagem MQTT em formato NGSI, que é compreensível pelo Orion.
 
-### Instruções
-1. Clone este repositório:
+Orion Context Broker:
 
-```bash
-git clone https://github.com/MindSyncc/Site_Challenge2.git
-```
+O IoT Agent envia os dados de velocidade no formato NGSI para o Orion.
+O Orion Context Broker atualiza o estado da entidade urn:ngsi-ld:fiware_carros_monitor, que contém os atributos speed_carro1 e speed_carro2.
+Requisição GET ao Orion:
 
-2. Navegue até o diretório do projeto:
+* A requisição GET http://{{url}}:1026/v2/entities/urn:ngsi-ld:fiware_carros_monitor/attrs/?attrs=speed_carro1,speed_carro2 consulta diretamente o Orion.
+O Orion responde com o estado atual dos atributos speed_carro1 e speed_carro2, que foram atualizados pelo IoT Agent com os dados enviados pelos sensores do ESP32.
 
-```bash
-cd e_masters_site
-```
+<h1> Fluxo de dados históricos </h1>
 
-3. Instale as dependências:
-```bash
-npm install
-```
+1- STH-Comet: É responsável por capturar e armazenar os dados históricos das entidades gerenciadas pelo Orion Context Broker.
 
-4. Inicie o servidor de desenvolvimento:
-```bash
-npm run dev
-```
+2 - Toda vez que o Orion Context Broker recebe uma atualização dos atributos (como ultrapassagem_carro1), ele também notifica o STH-Comet para registrar essa mudança no banco de dados.
+MongoDB: O STH-Comet armazena essas informações históricas no MongoDB. Cada vez que o atributo ultrapassagem_carro1 é atualizado, o valor é registrado com um timestamp.
 
-O aplicativo estará disponível em http://localhost:3000 no seu navegador.
+3 - Requisição GET ao STH-Comet:
 
-## Como Jogar
+* Quando você faz a requisição GET para o STH-Comet, ele consulta o MongoDB e retorna os últimos 30 valores registrados do atributo ultrapassagem_carro1.
 
-1. Selecione 10 pilotos e 1 equipe para competir.
-2. Acompanhe as duas fases: **Corrida Principal** e **Corrida Classificatória**.
-3. A pontuação é calculada com base nos seguintes critérios:
-   - **Posições finais**
-   - **Voltas rápidas**
-   - **Ultrapassagens e ultrapassagens sofridas**
-   - **Penalidades por desqualificação**
-4. Acumule pontos e veja seus resultados após cada corrida.
+### Esquema geral do fluxo
 
+    ESP32 (sensores) ---> Mosquitto (MQTT Broker) --->  IoT Agent (MQTT to NGSI) ---> Orion Context Broker (Dados em tempo real)    
+                                                                                   |
+                                                                           STH-Comet (Dados históricos / recebe notificações)
+                                                                                   |
+                                                                                 MongoDB
 
-## Regras do Jogo
+<h2>Como funciona o Docker Compose no seu sistema?</h2>
 
-### Corrida Principal
+Ao rodar o comando docker-compose up, o Docker Compose cria e inicia todos os contêineres definidos no arquivo docker-compose.yml.
+Todos os contêineres são isolados, mas podem se comunicar uns com os outros através de uma rede interna definida pelo Compose.
 
-- **Equipe Vencedora**: A soma da pontuação dos dois pilotos da equipe define a equipe vencedora.
-  - 1º lugar: 10 pontos
-  - 2º lugar: 5 pontos
-  - 3º lugar: 3 pontos
-  - 4º lugar: 2 pontos
-  - 5º lugar: 1 ponto
+* O Orion pode se comunicar com o MongoDB e o IoT Agent.
+* O STH-Comet pode se conectar ao MongoDB para armazenar dados históricos.
+* O Mosquitto está disponível para os dispositivos (ESP32) para lidar com mensagens MQTT.
+4. Vantagens de usar Docker Compose:
+* Facilidade de Deploy: Um único comando (docker-compose up) pode inicializar todo o ambiente de monitoramento, criando e configurando todos os contêineres necessários.
+* Isolamento: Cada serviço tem seu ambiente isolado. Isso evita problemas como conflito de dependências ou incompatibilidades de versão.
+* Portabilidade: O ambiente pode ser facilmente replicado em outro computador ou servidor. Basta ter o Docker e o arquivo docker-compose.yml.
+* Escalabilidade: Você pode escalar seus serviços com facilidade. Por exemplo, pode aumentar o número de instâncias do Orion Context Broker ou do MongoDB caso precise de mais capacidade.
+5. Fluxo de Dados com Docker Compose
+O fluxo de dados que explicamos antes continua o mesmo, mas com os serviços agora rodando em contêineres, orquestrados pelo Docker Compose:
 
-- **Acerto de Posições**: Cada colocação correta rende 10 pontos.
-  - Exemplo: Se o jogador acertar o 1º, o 3º e o 9º lugar, acumula 30 pontos.
-
-- **Acerto de Pilotos no Top 10**: Cada piloto entre os 10 primeiros acertado dá 5 pontos.
-
-- **Vencedor**: Acertar o vencedor dobra a pontuação desse piloto.
-
-- **Desqualificação**: Escalar um piloto desqualificado resulta em -5 pontos.
-
-- **Volta Mais Rápida**: Acertar o piloto da volta mais rápida concede 10 pontos.
-
-- **Ultrapassagens**: Cada ultrapassagem realizada dá 0,5 pontos, e cada ultrapassagem sofrida tira 0,2 pontos.
-
-### Corrida Classificatória
-
-- **Equipe Vencedora**: A soma da pontuação dos dois pilotos define a equipe vencedora.
-  - 1º lugar: 5 pontos
-  - 2º lugar: 2,5 pontos
-  - 3º lugar: 1,5 pontos
-  - 4º lugar: 1 ponto
-  - 5º lugar: 0,5 ponto
-
-- **Acerto de Posições**: Cada colocação correta rende 5 pontos.
-
-- **Acerto de Pilotos no Top 10**: Cada piloto acertado entre os 10 primeiros dá 2,5 pontos.
-
-- **Vencedor**: Acertar o vencedor dobra a pontuação desse piloto.
-
-- **Desqualificação**: Escalar um piloto desqualificado resulta em -2,5 pontos.
-
-- **Volta Mais Rápida**: Acertar o piloto da volta mais rápida concede 5 pontos.
-
-- **Ultrapassagens**: Cada ultrapassagem realizada dá 0,5 pontos, e cada ultrapassagem sofrida tira 0,2 pontos.
-
-### Link do repositório do projeto
-
-**https://github.com/MindSyncc/Site_Challenge2​**
-
-### Integrantes do projeto
-
-**Fernando Carlos Colque Huaranca​**  
-​
-**Heloísa Fleury Jardim**  
-​
-**Juan Fuentes Rufino**  
-**Julia Carolina Ferreira Silva**  
-**Pedro Henrique Silva Batista**  
+6. Resumo:
+Cada componente do sistema (Orion, IoT Agent, etc.) está sendo executado em contêineres Docker.
+O Docker Compose é responsável por definir e orquestrar esses contêineres, facilitando o gerenciamento do sistema como um todo.
+Cada serviço tem sua configuração definida no arquivo docker-compose.yml, permitindo fácil deploy e configuração, além de comunicação entre serviços via redes internas do Docker.
+Isso torna seu sistema mais modular, portátil e fácil de gerenciar, o que é especialmente útil para projetos complexos como o seu.
